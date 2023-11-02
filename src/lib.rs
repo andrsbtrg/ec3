@@ -51,7 +51,7 @@ pub struct Ec3api {
 #[derive(Error, Debug)]
 pub enum ApiError {
     #[error("Request failed")]
-    RequestError(#[from] ureq::Error),
+    RequestError(),
 
     #[error("Could not read cache")]
     CacheError(#[from] std::io::Error),
@@ -280,7 +280,8 @@ impl Ec3api {
         let response = ureq::get(&path)
             .set("Authorization", &auth)
             .query("mf", &filter)
-            .call()?
+            .call()
+            .map_err(|_| ApiError::RequestError())?
             .into_string()?;
 
         let json: Value = serde_json::from_str(&response)?;
