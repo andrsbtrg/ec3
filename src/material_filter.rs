@@ -69,7 +69,7 @@ pub fn convert(mf: &MaterialFilter) -> String {
         response.push_str(&filter.field);
         response.push_str(": ");
         response.push_str(&filter.op);
-        response.push_str("(");
+        response.push('(');
 
         // Surround each arg with double quotation marks
         let formatted_args: Vec<String> = filter
@@ -79,7 +79,7 @@ pub fn convert(mf: &MaterialFilter) -> String {
             .collect();
         response.push_str(&formatted_args.join(", "));
 
-        response.push_str(")");
+        response.push(')');
 
         // Add "AND" between filters except for the last one
         if i < mf.filter.len() - 1 {
@@ -90,9 +90,9 @@ pub fn convert(mf: &MaterialFilter) -> String {
     response.push_str("\n!pragma ");
     for (i, pragma) in mf.pragma.iter().enumerate() {
         response.push_str(&pragma.name);
-        response.push_str("(");
+        response.push('(');
         response.push_str(&format!("\"{}\"", pragma.args.join(", ")));
-        response.push_str(")");
+        response.push(')');
 
         // Add a comma and space between pragmas except for the last one
         if i < mf.pragma.len() - 1 {
@@ -102,7 +102,7 @@ pub fn convert(mf: &MaterialFilter) -> String {
 
     // TODO removeme
     println!("{}", &response);
-    return response;
+    response
 }
 
 #[test]

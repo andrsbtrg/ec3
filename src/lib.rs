@@ -158,7 +158,7 @@ fn write_cache(json: String, filename: &str) {
 
     let output = Path::join(dir, Path::new(format!("{}.json", filename).as_str()));
 
-    match std::fs::write(output, &json) {
+    match std::fs::write(output, json) {
         Ok(_) => {
             println!("Results cached")
         }
@@ -247,9 +247,9 @@ impl Ec3api {
     fn prepare_url(&self) -> String {
         let jurisdiction = match self.country {
             Country::None => "".to_owned(),
-            _ => format!("?jurisdiction={}", self.country.to_string()),
+            _ => format!("?jurisdiction={}", self.country),
         };
-        let url = format!("{}{}{}", BASE_PATH, self.endpoint.to_string(), jurisdiction);
+        let url = format!("{}{}{}", BASE_PATH, self.endpoint, jurisdiction);
 
         url
     }
