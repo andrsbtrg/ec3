@@ -53,7 +53,7 @@ impl MaterialFilter {
         }
     }
 
-    pub fn filter(&mut self, field: &str, op: &str, arg: Vec<&str>) {
+    pub fn add_filter(&mut self, field: &str, op: &str, arg: Vec<&str>) {
         let filter: Filter = Filter::new(field, op, arg);
         self.filter.push(filter);
     }
@@ -108,8 +108,8 @@ pub fn convert(mf: &MaterialFilter) -> String {
 #[test]
 fn test_material_filter() {
     let mut mf = MaterialFilter::of_category("Concrete");
-    mf.filter("jurisdiction", "in", vec!["150"]);
-    mf.filter("epd_types", "in", vec!["Product EPDs", "Industry EPDs"]);
+    mf.add_filter("jurisdiction", "in", vec!["150"]);
+    mf.add_filter("epd_types", "in", vec!["Product EPDs", "Industry EPDs"]);
 
     let converted = r#"!EC3 search("Concrete") WHERE
  jurisdiction: IN("150") AND
