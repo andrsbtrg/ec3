@@ -47,6 +47,7 @@ pub struct Ec3api {
     endpoint: Endpoint,
     country: Country,
     mf: Option<MaterialFilter>,
+    use_cache: bool,
 }
 #[derive(Error, Debug)]
 pub enum ApiError {
@@ -147,6 +148,8 @@ pub struct Ec3Material {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Category {
     pub description: String,
+    pub name: String,
+    pub display_name: String,
 }
 
 fn write_cache(json: String, filename: &str) {
@@ -209,6 +212,14 @@ fn read_cache(category: &str) -> Result<Vec<Ec3Material>, ApiError> {
                         .as_str()
                         .unwrap_or_default()
                         .to_string(),
+                    name: m["category"]["name"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .to_string(),
+                    display_name: m["category"]["display_name"]
+                        .as_str()
+                        .unwrap_or_default()
+                        .to_string(),
                 },
             };
 
@@ -225,6 +236,7 @@ impl Ec3api {
             endpoint: Endpoint::Materials,
             country: Country::Germany,
             mf: None,
+            use_cache: true,
         }
     }
 
@@ -253,16 +265,22 @@ impl Ec3api {
 
         url
     }
+    pub fn use_cache(&mut self, opt: bool) -> &mut Self {
+        self.use_cache = opt;
+        self
+    }
     pub fn fetch(&mut self) -> Result<Vec<Ec3Material>, ApiError> {
         let category = match &self.mf {
             Some(mf) => mf.get_category(),
             None => "cache".to_string(),
         };
 
-        if let Ok(ret) = read_cache(&category) {
-            return Ok(ret);
-        } else {
-            println!("no cache found");
+        if self.use_cache {
+            if let Ok(ret) = read_cache(&category) {
+                return Ok(ret);
+            } else {
+                println!("no cache found");
+            }
         }
 
         println!("Querying materials...");
