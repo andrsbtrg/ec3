@@ -60,6 +60,7 @@ pub fn read_cache(category: &str) -> Result<Vec<Ec3Material>, crate::error::ApiE
                     ),
                 },
                 description: m["description"].as_str().unwrap_or("").to_string(),
+                id: m["id"].as_str().unwrap_or("").to_string(),
                 category: Category {
                     description: m["category"]["description"]
                         .as_str()
@@ -73,6 +74,7 @@ pub fn read_cache(category: &str) -> Result<Vec<Ec3Material>, crate::error::ApiE
                         .as_str()
                         .unwrap_or_default()
                         .to_string(),
+                    id: m["category"]["id"].as_str().unwrap_or("").to_string(),
                 },
             };
 

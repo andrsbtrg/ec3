@@ -12,6 +12,7 @@ pub struct Ec3Material {
     pub manufacturer: Manufacturer,
     pub description: String,
     pub category: Category,
+    pub id: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Manufacturer {
@@ -24,6 +25,7 @@ pub struct Category {
     pub description: String,
     pub name: String,
     pub display_name: String,
+    pub id: String,
 }
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Gwp {
