@@ -16,4 +16,10 @@ pub enum ApiError {
 
     #[error("Wrong GWP format")]
     GwpError,
+
+    #[error("Deserialization error")]
+    DeserializationError(serde_json::Error),
+
+    #[error("Serialization error")]
+    SerializationError,
 }

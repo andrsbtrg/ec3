@@ -2,6 +2,47 @@ use crate::error::ApiError;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::str::FromStr;
 
+#[derive(Debug)]
+pub struct Ec3Category {
+    pub name: String,
+}
+impl Default for Ec3Category {
+    fn default() -> Self {
+        Self {
+            name: "ConstructionMaterials".to_string(),
+        }
+    }
+}
+#[derive(Debug)]
+pub struct Node<T> {
+    pub children: Option<Vec<Self>>,
+    pub value: T,
+}
+
+impl Node<Ec3Category> {
+    pub fn new() -> Self {
+        Node {
+            children: Some(Vec::new()),
+            value: Ec3Category::default(),
+        }
+    }
+    pub fn name(name: &str) -> Self {
+        Node {
+            children: Some(Vec::new()),
+            value: Ec3Category {
+                name: name.to_string(),
+            },
+        }
+    }
+
+    pub fn add_children(&mut self, node: Node<Ec3Category>) {
+        match &mut self.children {
+            Some(c) => c.push(node),
+            None => todo!(),
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Ec3Material {
     pub name: String,
