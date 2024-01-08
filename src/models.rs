@@ -2,7 +2,7 @@ use crate::error::ApiError;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::str::FromStr;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Ec3Category {
     pub name: String,
 }
@@ -13,7 +13,7 @@ impl Default for Ec3Category {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Node<T> {
     pub children: Option<Vec<Self>>,
     pub value: T,
@@ -43,7 +43,7 @@ impl Node<Ec3Category> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Ec3Material {
     pub name: String,
     #[serde(deserialize_with = "deserialize_from_str")]
@@ -55,26 +55,26 @@ pub struct Ec3Material {
     pub category: Category,
     pub id: String,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Manufacturer {
     pub name: String,
     pub country: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Category {
     pub description: String,
     pub name: String,
     pub display_name: String,
     pub id: String,
 }
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Gwp {
     pub value: f64,
     pub unit: GwpUnits,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GwpUnits {
     KgCO2e,
     Unknown,
