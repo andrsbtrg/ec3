@@ -1,18 +1,17 @@
-use std::{path::Path, str::FromStr};
+use std::{path::PathBuf, str::FromStr};
 
 use crate::{
     error::ApiError,
     models::{Category, Ec3Material, Gwp, GwpUnits, Manufacturer},
 };
 
-pub fn write_cache(json: String, filename: &str) {
-    let dir = Path::new(".cache");
-    if !dir.exists() {
+pub fn write_cache(path: &PathBuf, json: String, filename: &str) {
+    if !path.exists() {
         println!("No cache folder, creating");
-        std::fs::create_dir(dir).expect("Unable to create cache dir");
+        std::fs::create_dir(path).expect("Unable to create cache dir");
     }
 
-    let output = Path::join(dir, Path::new(format!("{}.json", filename).as_str()));
+    let output = path.join(format!("{}.json", filename));
 
     match std::fs::write(output, json) {
         Ok(_) => {
@@ -23,10 +22,11 @@ pub fn write_cache(json: String, filename: &str) {
         }
     };
 }
-pub fn read_cache(category: &str) -> Result<Vec<Ec3Material>, crate::error::ApiError> {
-    let dir = Path::new(".cache");
-
-    let output = Path::join(dir, Path::new(format!("{}.json", category).as_str()));
+pub fn read_cache(
+    path: &PathBuf,
+    category: &str,
+) -> Result<Vec<Ec3Material>, crate::error::ApiError> {
+    let output = path.join(format!("{}.json", category).as_str());
 
     let contents = std::fs::read_to_string(output)?;
 

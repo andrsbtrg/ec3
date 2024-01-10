@@ -6,7 +6,10 @@ pub mod utils;
 use material_filter::MaterialFilter;
 use models::Ec3Material;
 use serde_json::Value;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::{
+    fmt::{self, Debug, Display, Formatter},
+    path::PathBuf,
+};
 
 use crate::{
     error::ApiError,
@@ -23,6 +26,7 @@ pub struct Ec3api {
     country: Country,
     mf: Option<MaterialFilter>,
     use_cache: bool,
+    cache_dir: Option<PathBuf>,
 }
 
 pub enum Endpoint {
@@ -53,6 +57,7 @@ impl Ec3api {
             endpoint: Endpoint::Materials,
             country: Country::Germany,
             mf: None,
+            cache_dir: None,
             use_cache: true,
         }
     }
@@ -82,29 +87,42 @@ impl Ec3api {
 
         url
     }
+    /// True to read and write into cache
     pub fn use_cache(&mut self, opt: bool) -> &mut Self {
         self.use_cache = opt;
         self
     }
+    /// Set the directory to write cache to
+    pub fn cache_dir(&mut self, path: PathBuf) -> &mut Self {
+        self.cache_dir = Some(path);
+        self.use_cache = true;
+        self
+    }
     fn get_cached(&mut self) -> Option<Ec3Result> {
-        match self.endpoint {
-            Endpoint::Materials => {
-                if let Some(mf) = &self.mf {
-                    let category = mf.get_category();
+        if let Some(cache_dir) = &self.cache_dir {
+            match self.endpoint {
+                Endpoint::Materials => {
+                    if let Some(mf) = &self.mf {
+                        let category = mf.get_category();
 
-                    if let Ok(ret) = utils::read_cache(&category) {
-                        return Some(Ec3Result::Materials(ret));
+                        if let Ok(ret) = utils::read_cache(&cache_dir, &category) {
+                            return Some(Ec3Result::Materials(ret));
+                        } else {
+                            println!("no cache found");
+                            return None;
+                        }
                     } else {
-                        println!("no cache found");
+                        eprintln!("Using cache requires specifying a MaterialFilter");
                         return None;
                     }
-                } else {
-                    eprintln!("Using cache requires specifying a MaterialFilter");
+                }
+                Endpoint::Categories => {
+                    println!("No cache for Categories.");
                     return None;
                 }
             }
-            Endpoint::Categories => None,
         }
+        None
     }
     pub fn fetch_all(&mut self) -> APIResult {
         if self.use_cache {
@@ -134,7 +152,7 @@ impl Ec3api {
         let json: Value =
             serde_json::from_str(&response).map_err(|e| ApiError::DeserializationError(e))?;
         match self.endpoint {
-            Endpoint::Materials => Ok(Ec3Result::Materials(get_materials(json, &self.mf)?)),
+            Endpoint::Materials => Ok(Ec3Result::Materials(get_materials(json)?)),
 
             Endpoint::Categories => Ok(Ec3Result::Categories(get_categories(json)?)),
         }
@@ -146,10 +164,12 @@ impl Ec3api {
         };
 
         if self.use_cache {
-            if let Ok(ret) = utils::read_cache(&category) {
-                return Ok(ret);
-            } else {
-                println!("no cache found");
+            if let Some(path) = &self.cache_dir {
+                if let Ok(ret) = utils::read_cache(&path, &category) {
+                    return Ok(ret);
+                } else {
+                    println!("no cache found");
+                }
             }
         }
         println!("Querying {}...", &self.endpoint);
@@ -173,7 +193,21 @@ impl Ec3api {
 
         let json: Value = serde_json::from_str(&response)?;
 
-        Ok(get_materials(json, &self.mf)?)
+        let mats = get_materials(json)?;
+
+        let category = match &self.mf {
+            Some(mf) => mf.get_category(),
+            None => "cache".to_string(),
+        };
+        if let Some(path) = &self.cache_dir {
+            match serde_json::to_string_pretty(&mats) {
+                Ok(json) => utils::write_cache(path, json, &category),
+                Err(e) => {
+                    eprint!("Error: could not write cache: {e:?}");
+                }
+            };
+        }
+        Ok(mats)
     }
 }
 
@@ -203,10 +237,7 @@ fn parse_tree(json: &Value, parent: &mut Node<Ec3Category>) {
     }
 }
 
-fn get_materials(
-    json: Value,
-    mf: &Option<MaterialFilter>,
-) -> Result<Vec<Ec3Material>, error::ApiError> {
+fn get_materials(json: Value) -> Result<Vec<Ec3Material>, error::ApiError> {
     let mut materials: Vec<Ec3Material> = Vec::new();
 
     json.as_array()
@@ -217,16 +248,6 @@ fn get_materials(
 
             materials.push(material);
         });
-    let category = match &mf {
-        Some(mf) => mf.get_category(),
-        None => "cache".to_string(),
-    };
-    match serde_json::to_string_pretty(&materials) {
-        Ok(json) => utils::write_cache(json, &category),
-        Err(e) => {
-            eprint!("Error: could not write cache: {e:?}");
-        }
-    };
     Ok(materials)
 }
 
