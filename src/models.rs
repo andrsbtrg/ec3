@@ -55,13 +55,13 @@ pub struct Ec3Material {
     pub category: Category,
     pub id: String,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Hash, Clone, Debug, Serialize, Deserialize)]
 pub struct Manufacturer {
     pub name: String,
     pub country: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Hash, Clone, Debug, Serialize, Deserialize)]
 pub struct Category {
     pub description: String,
     pub name: String,
@@ -128,3 +128,17 @@ impl FromStr for Gwp {
         Ok(Gwp { value, unit })
     }
 }
+
+impl PartialEq for Category {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for Category {}
+
+impl PartialEq for Manufacturer {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name && self.country == other.country
+    }
+}
+impl Eq for Manufacturer {}
