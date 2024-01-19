@@ -22,4 +22,7 @@ pub enum ApiError {
 
     #[error("Serialization error")]
     SerializationError,
+
+    #[error("Wrong Unit format")]
+    UnitError,
 }

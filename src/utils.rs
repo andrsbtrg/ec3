@@ -2,7 +2,7 @@ use std::{path::PathBuf, str::FromStr};
 
 use crate::{
     error::ApiError,
-    models::{Category, Ec3Material, Gwp, GwpUnits, Manufacturer},
+    models::{Category, DeclaredUnit, Ec3Material, Gwp, GwpUnits, Manufacturer, Unit},
 };
 
 pub fn write_cache(path: &PathBuf, json: String, filename: &str) {
@@ -75,6 +75,11 @@ pub fn read_cache(
                         .unwrap_or_default()
                         .to_string(),
                     id: m["category"]["id"].as_str().unwrap_or("").to_string(),
+                },
+                declared_unit: DeclaredUnit {
+                    value: m["declared_unit"]["value"].as_f64().unwrap_or(1.),
+                    unit: Unit::from_str(m["declared_unit"]["unit"].as_str().unwrap_or(""))
+                        .unwrap_or(Unit::Unknown),
                 },
             };
 

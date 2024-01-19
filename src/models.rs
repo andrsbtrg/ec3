@@ -54,6 +54,8 @@ pub struct Ec3Material {
     pub description: String,
     pub category: Category,
     pub id: String,
+    #[serde(deserialize_with = "deserialize_from_str")]
+    pub declared_unit: DeclaredUnit,
 }
 #[derive(Hash, Clone, Debug, Serialize, Deserialize)]
 pub struct Manufacturer {
@@ -78,6 +80,44 @@ pub struct Gwp {
 pub enum GwpUnits {
     KgCO2e,
     Unknown,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DeclaredUnit {
+    pub value: f64,
+    pub unit: Unit,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Unit {
+    M3,
+    M2,
+    M,
+    SQFT,
+    Kg,
+    T,
+    Unknown,
+}
+impl FromStr for Unit {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "m2" => Ok(Self::M2),
+            "M2" => Ok(Self::M2),
+            "m3" => Ok(Self::M3),
+            "M3" => Ok(Self::M3),
+            "m" => Ok(Self::M),
+            "M" => Ok(Self::M),
+            "sqft" => Ok(Self::SQFT),
+            "SQFT" => Ok(Self::SQFT),
+            "ton" => Ok(Self::T),
+            "t" => Ok(Self::T),
+            "kg" => Ok(Self::Kg),
+            "Kg" => Ok(Self::Kg),
+            "KG" => Ok(Self::Kg),
+            _ => Ok(Self::Unknown),
+        }
+    }
 }
 
 impl FromStr for GwpUnits {
@@ -126,6 +166,17 @@ impl FromStr for Gwp {
         let value = x.parse::<f64>().map_err(|_| ApiError::GwpError)?;
         let unit = y.parse::<GwpUnits>().map_err(|_| ApiError::GwpError)?;
         Ok(Gwp { value, unit })
+    }
+}
+
+impl FromStr for DeclaredUnit {
+    type Err = crate::error::ApiError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let (x, y) = s.split_once(' ').ok_or(ApiError::UnitError)?;
+        let value = x.parse::<f64>().map_err(|_| ApiError::UnitError)?;
+        let unit = y.parse::<Unit>().map_err(|_| ApiError::UnitError)?;
+        Ok(DeclaredUnit { value, unit })
     }
 }
 
