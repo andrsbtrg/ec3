@@ -25,4 +25,6 @@ pub enum ApiError {
 
     #[error("Wrong Unit format")]
     UnitError,
+    #[error("Api rejected authentication")]
+    AuthError,
 }

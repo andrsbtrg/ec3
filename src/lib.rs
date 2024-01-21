@@ -1,6 +1,8 @@
 pub mod error;
 pub mod material_filter;
 pub mod models;
+#[cfg(test)]
+mod tests;
 pub mod utils;
 
 use material_filter::MaterialFilter;
@@ -146,7 +148,14 @@ impl Ec3api {
             .set("Authorization", &auth)
             .query("mf", &filter)
             .call()
-            .map_err(|_| ApiError::RequestError())?
+            .map_err(|e| {
+                eprintln!("{e}");
+                match e {
+                    ureq::Error::Status(401, _) => ApiError::AuthError,
+                    ureq::Error::Status(_, _) => ApiError::RequestError(),
+                    ureq::Error::Transport(_) => ApiError::RequestError(),
+                }
+            })?
             .into_string()?;
 
         let json: Value =
@@ -188,7 +197,14 @@ impl Ec3api {
             .set("Authorization", &auth)
             .query("mf", &filter)
             .call()
-            .map_err(|_| ApiError::RequestError())?
+            .map_err(|e| {
+                eprintln!("{e}");
+                match e {
+                    ureq::Error::Status(401, _) => ApiError::AuthError,
+                    ureq::Error::Status(_, _) => ApiError::RequestError(),
+                    ureq::Error::Transport(_) => ApiError::RequestError(),
+                }
+            })?
             .into_string()?;
 
         let json: Value = serde_json::from_str(&response)?;
