@@ -1,6 +1,6 @@
 use crate::error::ApiError;
 use serde::{de, Deserialize, Deserializer, Serialize};
-use std::str::FromStr;
+use std::{hash::Hash, str::FromStr};
 
 #[derive(Debug, Clone)]
 pub struct Ec3Category {
@@ -57,13 +57,13 @@ pub struct Ec3Material {
     #[serde(deserialize_with = "deserialize_from_str")]
     pub declared_unit: DeclaredUnit,
 }
-#[derive(Hash, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Manufacturer {
     pub name: String,
     pub country: Option<String>,
 }
 
-#[derive(Hash, Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Category {
     pub description: String,
     pub name: String,
@@ -179,14 +179,23 @@ impl FromStr for DeclaredUnit {
         Ok(DeclaredUnit { value, unit })
     }
 }
-
+impl Hash for Category {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
 impl PartialEq for Category {
     fn eq(&self, other: &Self) -> bool {
         self.id == other.id
     }
 }
 impl Eq for Category {}
-
+impl Hash for Manufacturer {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.country.hash(state);
+    }
+}
 impl PartialEq for Manufacturer {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name && self.country == other.country

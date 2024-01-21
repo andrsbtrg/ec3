@@ -223,7 +223,6 @@ fn parse_tree(json: &Value, parent: &mut Node<Ec3Category>) {
     if let Value::Object(root) = json {
         let subcs = root.get("subcategories").unwrap();
         parse_tree(subcs, parent);
-        return;
     } else if let Value::Array(subc) = json {
         subc.iter().for_each(|v| {
             let name = v.get("name").unwrap().as_str().unwrap();
@@ -232,8 +231,6 @@ fn parse_tree(json: &Value, parent: &mut Node<Ec3Category>) {
             parse_tree(v, &mut node);
             parent.add_children(node);
         })
-    } else {
-        println!("else")
     }
 }
 
