@@ -1,4 +1,7 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use crate::{
     error::ApiError,
@@ -22,10 +25,7 @@ pub fn write_cache(path: &PathBuf, json: String, filename: &str) {
         }
     };
 }
-pub fn read_cache(
-    path: &PathBuf,
-    category: &str,
-) -> Result<Vec<Ec3Material>, crate::error::ApiError> {
+pub fn read_cache(path: &Path, category: &str) -> Result<Vec<Ec3Material>, crate::error::ApiError> {
     let output = path.join(format!("{}.json", category).as_str());
 
     let contents = std::fs::read_to_string(output)?;

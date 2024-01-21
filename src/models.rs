@@ -19,6 +19,12 @@ pub struct Node<T> {
     pub value: T,
 }
 
+impl Default for Node<Ec3Category> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Node<Ec3Category> {
     pub fn new() -> Self {
         Node {

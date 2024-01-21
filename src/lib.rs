@@ -107,7 +107,7 @@ impl Ec3api {
                     if let Some(mf) = &self.mf {
                         let category = mf.get_category();
 
-                        if let Ok(ret) = utils::read_cache(&cache_dir, &category) {
+                        if let Ok(ret) = utils::read_cache(cache_dir, &category) {
                             return Some(Ec3Result::Materials(ret));
                         } else {
                             println!("no cache found");
@@ -159,7 +159,7 @@ impl Ec3api {
             .into_string()?;
 
         let json: Value =
-            serde_json::from_str(&response).map_err(|e| ApiError::DeserializationError(e))?;
+            serde_json::from_str(&response).map_err(ApiError::DeserializationError)?;
         match self.endpoint {
             Endpoint::Materials => Ok(Ec3Result::Materials(get_materials(json)?)),
 
@@ -174,7 +174,7 @@ impl Ec3api {
 
         if self.use_cache {
             if let Some(path) = &self.cache_dir {
-                if let Ok(ret) = utils::read_cache(&path, &category) {
+                if let Ok(ret) = utils::read_cache(path, &category) {
                     return Ok(ret);
                 } else {
                     println!("no cache found");
