@@ -11,7 +11,10 @@ use serde_json::Value;
 use std::{
     fmt::{self, Debug, Display, Formatter},
     path::PathBuf,
+    thread,
+    time::Duration,
 };
+use ureq::{Error, Response};
 
 use crate::{
     error::ApiError,
@@ -193,14 +196,14 @@ impl Ec3api {
             String::new()
         };
 
-        let response = ureq::get(&path)
-            .set("Authorization", &auth)
-            .query("mf", &filter)
-            .call()
+        let response = get_response(&path, &auth, &filter)
             .map_err(|e| {
                 eprintln!("{e}");
                 match e {
                     ureq::Error::Status(401, _) => ApiError::AuthError,
+                    ureq::Error::Status(429, response) => {
+                        ApiError::TooManyRequest(response.into_string().unwrap_or("".to_string()))
+                    }
                     ureq::Error::Status(_, _) => ApiError::RequestError(),
                     ureq::Error::Transport(_) => ApiError::RequestError(),
                 }
@@ -225,6 +228,33 @@ impl Ec3api {
         }
         Ok(mats)
     }
+}
+
+/// Fetch and retry if error code is 429 | 503
+fn get_response(path: &str, auth: &str, filter: &str) -> Result<Response, Error> {
+    for _ in 1..4 {
+        match ureq::get(path)
+            .set("Authorization", auth)
+            .query("mf", filter)
+            .call()
+        {
+            Err(ureq::Error::Status(503, r)) | Err(ureq::Error::Status(429, r)) => {
+                let retry: Option<u64> = r.header("retry-after").and_then(|h| h.parse().ok());
+                let retry = retry.unwrap_or(5);
+                eprintln!(
+                    "ERROR: {status} for {path}, retry in {retry}",
+                    status = r.status()
+                );
+                thread::sleep(Duration::from_secs(retry));
+            }
+            result => return result,
+        }
+    }
+    // Ran out of retries; try one last time and return whatever result we get.
+    ureq::get(path)
+        .set("Authorization", auth)
+        .query("mf", filter)
+        .call()
 }
 
 fn get_categories(json: Value) -> Result<Node<Ec3Category>, error::ApiError> {

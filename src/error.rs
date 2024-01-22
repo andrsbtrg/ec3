@@ -27,4 +27,6 @@ pub enum ApiError {
     UnitError,
     #[error("Api rejected authentication")]
     AuthError,
+    #[error("The client made too many requests to the api")]
+    TooManyRequest(String),
 }
