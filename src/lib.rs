@@ -6,11 +6,12 @@ mod tests;
 pub mod utils;
 
 use material_filter::MaterialFilter;
-use models::Ec3Material;
+use models::{DeclaredUnit, Ec3Material};
 use serde_json::Value;
 use std::{
     fmt::{self, Debug, Display, Formatter},
     path::PathBuf,
+    str::FromStr,
     thread,
     time::Duration,
 };
@@ -272,8 +273,10 @@ fn parse_tree(json: &Value, parent: &mut Node<Ec3Category>) {
     } else if let Value::Array(subc) = json {
         subc.iter().for_each(|v| {
             let name = v.get("name").unwrap().as_str().unwrap();
+            let declared_unit = v.get("declared_unit").unwrap().as_str().unwrap();
+            let declared_unit = DeclaredUnit::from_str(declared_unit).unwrap_or_default();
 
-            let mut node = Node::name(name);
+            let mut node = Node::with_category(name, declared_unit);
             parse_tree(v, &mut node);
             parent.add_children(node);
         })

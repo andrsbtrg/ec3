@@ -5,11 +5,16 @@ use std::{hash::Hash, str::FromStr};
 #[derive(Debug, Clone)]
 pub struct Ec3Category {
     pub name: String,
+    pub declared_unit: DeclaredUnit,
 }
 impl Default for Ec3Category {
     fn default() -> Self {
         Self {
             name: "ConstructionMaterials".to_string(),
+            declared_unit: DeclaredUnit {
+                value: 1.,
+                unit: Unit::Kg,
+            },
         }
     }
 }
@@ -32,11 +37,12 @@ impl Node<Ec3Category> {
             value: Ec3Category::default(),
         }
     }
-    pub fn name(name: &str) -> Self {
+    pub fn with_category(name: &str, declared_unit: DeclaredUnit) -> Self {
         Node {
             children: Some(Vec::new()),
             value: Ec3Category {
                 name: name.to_string(),
+                declared_unit,
             },
         }
     }
@@ -93,7 +99,15 @@ pub struct DeclaredUnit {
     pub value: f64,
     pub unit: Unit,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+impl Default for DeclaredUnit {
+    fn default() -> Self {
+        Self {
+            value: 1.0,
+            unit: Unit::Unknown,
+        }
+    }
+}
+#[derive(PartialEq, Eq, Clone, Debug, Serialize, Deserialize)]
 pub enum Unit {
     M3,
     M2,

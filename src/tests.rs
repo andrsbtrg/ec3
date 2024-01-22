@@ -35,9 +35,14 @@ fn fetch_categories() {
         .fetch_all()
         .unwrap();
     if let Ec3Result::Categories(categories) = api_result {
-        println!("{:?}", categories);
-        assert!(categories.children.unwrap().len() > 0)
-    }
+        // println!("{:?}", categories);
+        let children = categories.children.expect("Node yielded no children");
+        let concrete = children
+            .iter()
+            .find(|x| x.value.name == "Concrete")
+            .expect("Expected 'Concrete' node");
+        assert!(concrete.value.declared_unit.unit == crate::models::Unit::M3);
+    };
 }
 
 #[test]

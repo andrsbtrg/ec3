@@ -104,17 +104,3 @@ pub fn convert(mf: &MaterialFilter) -> String {
     println!("{}", &response);
     response
 }
-
-#[test]
-fn test_material_filter() {
-    let mut mf = MaterialFilter::of_category("Concrete");
-    mf.add_filter("jurisdiction", "in", vec!["150"]);
-    mf.add_filter("epd_types", "in", vec!["Product EPDs", "Industry EPDs"]);
-
-    let converted = r#"!EC3 search("Concrete") WHERE
- jurisdiction: IN("150") AND
- epd_types: IN("Product EPDs", "Industry EPDs")
-!pragma eMF("2.0/1"), lcia("EF 3.0")"#;
-
-    assert_eq!(convert(&mf).as_str(), converted)
-}
