@@ -7,6 +7,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  API_KEY: ${{ secrets.EC3_API_KEY }}
 
 jobs:
   build:
