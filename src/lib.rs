@@ -164,6 +164,7 @@ impl Ec3api {
 
         let json: Value =
             serde_json::from_str(&response).map_err(ApiError::DeserializationError)?;
+        std::fs::write("./tmp.json", json.to_string())?;
         match self.endpoint {
             Endpoint::Materials => Ok(Ec3Result::Materials(get_materials(json)?)),
 
@@ -275,8 +276,9 @@ fn parse_tree(json: &Value, parent: &mut Node<Ec3Category>) {
             let name = v.get("name").unwrap().as_str().unwrap();
             let declared_unit = v.get("declared_unit").unwrap().as_str().unwrap();
             let declared_unit = DeclaredUnit::from_str(declared_unit).unwrap_or_default();
+            let id: String = v.get("id").unwrap().as_str().unwrap().to_string();
 
-            let mut node = Node::with_category(name, declared_unit);
+            let mut node = Node::with_category(name, declared_unit, id);
             parse_tree(v, &mut node);
             parent.add_children(node);
         })

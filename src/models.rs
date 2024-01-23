@@ -6,6 +6,7 @@ use std::{hash::Hash, str::FromStr};
 pub struct Ec3Category {
     pub name: String,
     pub declared_unit: DeclaredUnit,
+    pub id: String,
 }
 impl Default for Ec3Category {
     fn default() -> Self {
@@ -15,6 +16,7 @@ impl Default for Ec3Category {
                 value: 1.,
                 unit: Unit::Kg,
             },
+            id: String::new(),
         }
     }
 }
@@ -37,12 +39,13 @@ impl Node<Ec3Category> {
             value: Ec3Category::default(),
         }
     }
-    pub fn with_category(name: &str, declared_unit: DeclaredUnit) -> Self {
+    pub fn with_category(name: &str, declared_unit: DeclaredUnit, id: String) -> Self {
         Node {
             children: Some(Vec::new()),
             value: Ec3Category {
                 name: name.to_string(),
                 declared_unit,
+                id,
             },
         }
     }

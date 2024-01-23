@@ -35,7 +35,8 @@ fn fetch_categories() {
         .fetch_all()
         .unwrap();
     if let Ec3Result::Categories(categories) = api_result {
-        // println!("{:?}", categories);
+        // let txt = format!("{:?}", &categories);
+        // let _ = std::fs::write("./node.txt", txt);
         let children = categories.children.expect("Node yielded no children");
         let concrete = children
             .iter()
