@@ -164,7 +164,6 @@ impl Ec3api {
 
         let json: Value =
             serde_json::from_str(&response).map_err(ApiError::DeserializationError)?;
-        std::fs::write("./tmp.json", json.to_string())?;
         match self.endpoint {
             Endpoint::Materials => Ok(Ec3Result::Materials(get_materials(json)?)),
 
